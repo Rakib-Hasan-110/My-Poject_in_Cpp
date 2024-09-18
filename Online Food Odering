@@ -1,0 +1,191 @@
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+class FoodItem {
+private:
+    string name;
+    double price;
+
+public:
+    FoodItem() {}
+
+    FoodItem(string foodName, double foodPrice) {
+        name = foodName;
+        price = foodPrice;
+    }
+
+    void displayItem() {
+        cout << name << " - $" << price << endl;
+    }
+
+    double getPrice() {
+        return price;
+    }
+
+    string getName() {
+        return name;
+    }
+
+    void setDetails(string foodName, double foodPrice) {
+        name = foodName;
+        price = foodPrice;
+    }
+};
+
+class Restaurant {
+private:
+    string name;
+    FoodItem menu[10];  
+    int totalItems;
+
+public:
+    Restaurant() {
+        totalItems = 0;
+    }
+
+    void setName(string restName) {
+        name = restName;
+    }
+
+    void addFoodItem(FoodItem item) {
+        if (totalItems < 10) {
+            menu[totalItems] = item;
+            totalItems++;
+        } else {
+            cout << "Menu is full. Can't add more items." << endl;
+        }
+    }
+
+    void displayMenu() {
+        cout << "Welcome to " << name << "!" << endl;
+        cout << "Here is the menu:\n";
+        for (int i = 0; i < totalItems; i++) {
+            cout << i + 1 << ". ";
+            menu[i].displayItem();
+        }
+    }
+
+    FoodItem getFoodItem(int index) {
+        if (index >= 0 && index < totalItems) {
+            return menu[index];
+        } else {
+            return FoodItem();
+        }
+    }
+
+    string getName() {
+        return name;
+    }
+};
+
+class Customer {
+private:
+    string name;
+    double balance;
+
+public:
+    Customer() {
+        name = "";
+        balance = 0;
+    }
+
+    void initialize(string customerName, double initialBalance) {
+        name = customerName;
+        balance = initialBalance;
+    }
+
+    void displayBalance() {
+        cout << "Your balance: $" << balance << endl;
+    }
+
+    void placeOrder(Restaurant& restaurant) {
+        int choice, quantity;
+        double totalCost = 0;
+        char moreItems;
+
+        restaurant.displayMenu();
+
+        do {
+            cout << "\nEnter the number of the food item you'd like to order: ";
+            cin >> choice;
+            choice--;  // Adjust for 0-based index
+
+            FoodItem item = restaurant.getFoodItem(choice);
+
+            if (item.getName() != "") {
+                cout << "You selected: " << item.getName() << " - $" << item.getPrice() << endl;
+                cout << "Enter quantity: ";
+                cin >> quantity;
+
+                double itemTotal = item.getPrice() * quantity;
+                totalCost += itemTotal;
+
+                cout << "Added " << quantity << " x " << item.getName() << " to your order. Item total: $" << itemTotal << endl;
+            } else {
+                cout << "Invalid selection." << endl;
+            }
+
+            cout << "Do you want to order more items? (Y/N): ";
+            cin >> moreItems;
+        } while (moreItems == 'Y' || moreItems == 'y');
+
+        // Display total order cost and check balance
+        cout << "\nYour total order cost is: $" << totalCost << endl;
+
+        if (balance >= totalCost) {
+            balance -= totalCost;
+            cout << "Order placed successfully!" << endl;
+            displayBalance();
+        } else {
+            cout << "Insufficient balance to place the order." << endl;
+        }
+    }
+};
+
+
+int main() {
+    Restaurant restaurant;
+    string restName, foodName, customerName;
+    double foodPrice, customerBalance;
+    int numItems;
+
+    cout << "Enter the restaurant name: ";
+    getline(cin, restName);
+    restaurant.setName(restName);
+
+    // Input menu items
+    cout << "Enter the number of menu items: ";
+    cin >> numItems;
+    cin.ignore();  
+
+    for (int i = 0; i < numItems; i++) {
+        cout << "\nEnter details for food item " << i + 1 << ":\n";
+        cout << "Food name: ";
+        getline(cin, foodName);
+        cout << "Food price: $";
+        cin >> foodPrice;
+        cin.ignore();  // Clear the newline character after using cin
+
+        FoodItem item;
+        item.setDetails(foodName, foodPrice);
+        restaurant.addFoodItem(item);
+    }
+
+    cout << "\nEnter your name: ";
+    getline(cin, customerName);
+    cout << "Enter your balance: $";
+    cin >> customerBalance;
+    cin.ignore();  
+
+    Customer customer;
+    customer.initialize(customerName, customerBalance);
+
+    cout << "\nHello, " << customerName << "!" << endl;
+    customer.displayBalance();
+
+    customer.placeOrder(restaurant);
+
+    return 0;
+}
